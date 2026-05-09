@@ -237,7 +237,7 @@ namespace RoundedTB
             if (tbBottom >= screenH - 2)
             {
                 // Taskbar at bottom — grow upward (bottom edge stays fixed)
-                newY = (int)Math.Round(state.BaseTop + (state.BaseHeight - newH));
+                newY = (int)Math.Round((double)(state.BaseTop + (state.BaseHeight - newH)));
             }
             else if (tbTop <= 2)
             {

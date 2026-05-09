@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
     <OutputType>WinExe</OutputType>
     <RootNamespace>RoundedTB</RootNamespace>
     <AssemblyName>RoundedTB</AssemblyName>
@@ -12,30 +12,25 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Nullable>disable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
-    <Platforms>AnyCPU;x64</Platforms>
-    <!-- Suppress ClickOnce / bootstrapper properties that cause restore warnings -->
-    <IsWebBootstrapper>false</IsWebBootstrapper>
-    <PublishUrl>publish\</PublishUrl>
+    <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
 
-  <!-- NuGet packages -->
   <ItemGroup>
-    <PackageReference Include="DesktopBridge.Helpers"                                   Version="1.2.1" />
-    <PackageReference Include="Hardcodet.NotifyIcon.Wpf"                                 Version="1.1.0" />
-    <PackageReference Include="Interop.UIAutomationClient"                               Version="10.19041.0" />
-    <PackageReference Include="Interop.UIAutomationCore"                                 Version="10.19041.0" />
-    <PackageReference Include="Microsoft.CSharp"                                         Version="4.7.0" />
-    <PackageReference Include="Newtonsoft.Json"                                          Version="13.0.3" />
-    <PackageReference Include="PInvoke.User32"                                           Version="0.7.104" />
-    <PackageReference Include="System.Data.DataSetExtensions"                            Version="4.5.0" />
-    <PackageReference Include="WPF-UI"                                                   Version="1.2.1" />
-    <PackageReference Include="Microsoft.Windows.Compatibility"                          Version="6.0.0" />
+    <PackageReference Include="DesktopBridge.Helpers"                                        Version="1.2.1" />
+    <PackageReference Include="Hardcodet.NotifyIcon.Wpf"                                     Version="1.1.0" />
+    <PackageReference Include="Interop.UIAutomationClient"                                   Version="10.19041.0" />
+    <PackageReference Include="Interop.UIAutomationCore"                                     Version="10.19041.0" />
+    <PackageReference Include="Microsoft.CSharp"                                             Version="4.7.0" />
+    <PackageReference Include="Newtonsoft.Json"                                              Version="13.0.3" />
+    <PackageReference Include="PInvoke.User32"                                               Version="0.7.104" />
+    <PackageReference Include="System.Data.DataSetExtensions"                                Version="4.5.0" />
+    <PackageReference Include="WPF-UI"                                                       Version="1.2.1" />
+    <PackageReference Include="Microsoft.Windows.Compatibility"                              Version="8.0.0" />
     <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.3.261602">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
 
-  <!-- COM reference for IWshRuntimeLibrary (Windows Script Host Object Model) -->
   <ItemGroup>
     <COMReference Include="IWshRuntimeLibrary">
       <Guid>{F935DC20-1CF0-11D0-ADB9-00C04FD58A0B}</Guid>
@@ -48,7 +43,6 @@
     </COMReference>
   </ItemGroup>
 
-  <!-- Embedded resources / icons -->
   <ItemGroup>
     <Resource Include="RoundedTB.ico" />
     <Resource Include="RoundedTBCanary.ico" />
@@ -60,7 +54,6 @@
     <Resource Include="res\HeadBannerDev.png" />
   </ItemGroup>
 
-  <!-- netstandard reference needed by some legacy packages -->
   <ItemGroup>
     <Reference Include="netstandard" />
   </ItemGroup>

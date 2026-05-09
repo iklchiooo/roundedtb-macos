@@ -14,23 +14,19 @@ jobs:
     runs-on: windows-2022
 
     steps:
-      # ── 1. Checkout ────────────────────────────────────────────────────
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0          # full history so git rev-parse works
+          fetch-depth: 0
 
-      # ── 2. Setup .NET 6 SDK ────────────────────────────────────────────
-      - name: Setup .NET 6
+      - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '6.0.x'
+          dotnet-version: '8.0.x'
 
-      # ── 3. Setup MSBuild (needed for WPF / COM references) ─────────────
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
-      # ── 4. Cache NuGet packages ────────────────────────────────────────
       - name: Cache NuGet
         uses: actions/cache@v4
         with:
@@ -38,39 +34,25 @@ jobs:
           key: nuget-${{ hashFiles('**/RoundedTB.csproj') }}
           restore-keys: nuget-
 
-      # ── 5. Restore NuGet packages ──────────────────────────────────────
-      - name: Restore NuGet packages
+      - name: Restore
         run: dotnet restore RoundedTB.sln
 
-      # ── 6. Build Release (x64) ─────────────────────────────────────────
-      - name: Build Release x64
-        run: >
-          msbuild RoundedTB.sln
-          /p:Configuration=Release
-          /p:Platform="Any CPU"
-          /p:RuntimeIdentifier=win-x64
-          /m
-          /nologo
+      - name: Build Release
+        run: msbuild RoundedTB.sln /p:Configuration=Release /p:Platform="Any CPU" /m /nologo
 
-      # ── 7. Rename output folder with short commit hash ─────────────────
       - name: Rename output folder
         shell: pwsh
         run: |
-          $hash = git rev-parse --short $env:GITHUB_SHA
-          $src  = ".\RoundedTB\bin\Release\net6.0-windows10.0.19041.0"
-          $dst  = ".\RoundedTB\bin\RoundedTB-$hash"
-          if (Test-Path $src) {
-            Rename-Item -Path $src -NewName "RoundedTB-$hash"
-            Write-Host "Renamed to $dst"
+          $hash  = git rev-parse --short $env:GITHUB_SHA
+          $found = Get-ChildItem ".\RoundedTB\bin\Release" -Directory | Select-Object -First 1
+          if ($found) {
+            Rename-Item -Path $found.FullName -NewName "RoundedTB-$hash"
+            Write-Host "Output folder: RoundedTB-$hash"
           } else {
-            # Fallback: find whatever Release subfolder exists
-            $found = Get-ChildItem ".\RoundedTB\bin\Release" -Directory | Select-Object -First 1
-            if ($found) {
-              Rename-Item -Path $found.FullName -NewName "RoundedTB-$hash"
-            }
+            Write-Error "No output folder under .\RoundedTB\bin\Release"
+            exit 1
           }
 
-      # ── 8. Upload build artifacts ──────────────────────────────────────
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -78,7 +60,6 @@ jobs:
           path: .\RoundedTB\bin\RoundedTB-*\
           if-no-files-found: error
 
-  # ── Release job: only runs on version tags (v*.*.*) ─────────────────────
   release:
     name: Create GitHub Release
     needs: build
@@ -89,10 +70,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup .NET 6
+      - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '6.0.x'
+          dotnet-version: '8.0.x'
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
@@ -101,21 +82,15 @@ jobs:
         run: dotnet restore RoundedTB.sln
 
       - name: Build Release
-        run: >
-          msbuild RoundedTB.sln
-          /p:Configuration=Release
-          /p:Platform="Any CPU"
-          /m /nologo
+        run: msbuild RoundedTB.sln /p:Configuration=Release /p:Platform="Any CPU" /m /nologo
 
-      # Zip the output for the release asset
       - name: Zip release output
         shell: pwsh
         run: |
-          $tag  = "${{ github.ref_name }}"
-          $src  = ".\RoundedTB\bin\Release\net6.0-windows10.0.19041.0"
-          $zip  = "RoundedTB-DockMag-$tag.zip"
-          Compress-Archive -Path "$src\*" -DestinationPath $zip
-          Write-Host "Created $zip"
+          $tag = "${{ github.ref_name }}"
+          $src = Get-ChildItem ".\RoundedTB\bin\Release" -Directory | Select-Object -First 1
+          Compress-Archive -Path "$($src.FullName)\*" -DestinationPath "RoundedTB-DockMag-$tag.zip"
+          Write-Host "Created RoundedTB-DockMag-$tag.zip"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -125,20 +100,11 @@ jobs:
           body: |
             ## macOS Dock Magnification for Windows 11 Taskbar
 
-            This build adds smooth macOS-style icon magnification on hover to the Windows 11 taskbar.
-
-            ### What's new
-            - Hover magnification with configurable peak scale (10%–120%)
-            - Smooth lerp animation at ~60 fps
-            - Anchor-to-edge growth (bottom taskbar grows upward, matching macOS)
-            - Safe background-worker lifecycle (no race conditions on enable/disable)
-
             ### How to use
             1. Extract the zip
             2. Run `RoundedTB.exe`
-            3. Enable **"macOS Dock magnification on hover"** in the settings panel
-            4. Adjust the slider to your preferred scale
-
+            3. Enable **"macOS Dock magnification on hover"**
+            4. Adjust the scale slider to taste
           files: RoundedTB-DockMag-${{ github.ref_name }}.zip
           draft: false
           prerelease: false
